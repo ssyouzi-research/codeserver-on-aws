@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'EC2 Launch Template'
+
+Parameters:
+  VERSION:
+    Type: String
+    Default: 4.103.2
+    Description: Version parameter
+  
+  USER:
+    Type: String
+    Default: ec2-user
+    Description: User parameter
+
+Resources:
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub '${AWS::StackName}-LaunchTemplate'
+      LaunchTemplateData:
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y git nginx
+            curl -fOL https://github.com/coder/code-server/releases/download/v${VERSION}/code-server-${VERSION}-amd64.rpm
+            rpm  -i code-server-${VERSION}-amd64.rpm
+            mkdir -p /home/${USER}/.config/code-server
+            cat << 'EOF' > /home/${USER}/.config/code-server/config.yaml
+            bind-addr: 127.0.0.1:8080
+            auth: none
+            cert: false
+            EOF
+            chown -R ${USER}:${USER} /home/${USER}/.config
+            systemctl enable --now code-server@${USER}
+            systemctl start code-server@${USER}
+            cat << 'EOF' > /etc/nginx/conf.d/server.conf
+            server {
+              server_name           *.cloudfront.net;
+              location / {
+                proxy_pass          http://localhost:8080/;
+                proxy_set_header    Host $host;
+                proxy_set_header    Upgrade $http_upgrade;
+                proxy_set_header    Connection upgrade;
+                proxy_set_header    Accept-Encoding gzip;
+              }
+            }
+            EOF
+            systemctl enable nginx
+            systemctl start nginx
+
+Outputs:
+  LaunchTemplateId:
+    Description: Launch Template ID
+    Value: !Ref LaunchTemplate

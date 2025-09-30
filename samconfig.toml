@@ -1,0 +1,13 @@
+version = 0.1
+
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "development-environment-stack"
+s3_bucket = ""
+s3_prefix = "development-environment"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "EC2DomainName=your-ec2-domain.com"
+image_repositories = []
