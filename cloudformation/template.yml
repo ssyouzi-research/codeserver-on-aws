@@ -190,6 +190,8 @@ Resources:
           UseHttpPath = true
           EOF
           chown ${CodeServerUser}:${CodeServerUser} /home/${CodeServerUser}/.gitconfig
+          docker run --privileged --rm tonistiigi/binfmt --install all
+          docker buildx create --name mybuilder --use          
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-EC2-Instance
