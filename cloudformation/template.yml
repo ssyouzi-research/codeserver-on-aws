@@ -181,6 +181,8 @@ Resources:
           curl -fsSL https://deno.land/install.sh | sh
           echo 'export PATH="$HOME/.deno/bin:$PATH"' >> .bashrc
           .deno/bin/deno jupyter --install
+          docker run --privileged --rm tonistiigi/binfmt --install all
+          docker buildx create --name mybuilder --use           
           EOF
           chmod +x /tmp/install.sh
           su - ${CodeServerUser} -c "/tmp/install.sh"
@@ -189,9 +191,7 @@ Resources:
           helper = !aws codecommit credential-helper $@
           UseHttpPath = true
           EOF
-          chown ${CodeServerUser}:${CodeServerUser} /home/${CodeServerUser}/.gitconfig
-          docker run --privileged --rm tonistiigi/binfmt --install all
-          docker buildx create --name mybuilder --use          
+          chown ${CodeServerUser}:${CodeServerUser} /home/${CodeServerUser}/.gitconfig        
       Tags:
         - Key: Name
           Value: !Sub ${AWS::StackName}-EC2-Instance
